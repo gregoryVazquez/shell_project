@@ -224,4 +224,54 @@ void executecmdline(char *incmd) {
 	exit(1);
 }
 
- 
+
+// gets current user info for saving histfile
+char *get_user_homedir() {
+	uid_t uid = getuid();
+	struct passwd *pw = getpwuid(uid);
+	char *homedir = NULL;
+	if (pw == NULL) {
+		fprintf(stderr, "Error gathering user info\n");
+		exit(1);
+	}
+	endpwent();
+	return pw->pw_dir;
+}
+
+// init_history is basically just a wrapper around fopen 
+// that takes the macro HISTORYFILE as an argument and 
+// stores it in the users home dir 
+FILE *init_history() {
+	char *user_homedir = get_user_homedir();
+	char usrdir[MAX_CANON];
+	if (strlen(user_homedir) > MAX_CANON) {
+	       fprintf(stderr, "excessive dir string length\n");
+       		exit(1);
+	}		
+	sprintf(usrdir, "%s/%s", user_homedir, HISTORYFILE);
+	FILE *histfile = fopen(usrdir, "a+");
+	if (histfile == NULL) {
+		perror("error creating histfile");
+		exit(1);
+	}
+	return histfile;
+}
+
+// conv funct to read histfile that adds a count to the hist  
+void read_history(FILE *file) {
+	int count;
+	rewind(file);
+	for (count = 1; !feof(file); count++) {
+		char hist_buf[MAX_CANON];
+		fscanf(file, "%[^\n]\n", hist_buf);
+		fprintf(stdout, "%-3d %s\n", count, hist_buf);
+	}
+}
+
+// writes hist to the hist file fprint wrap
+void write_history(FILE *file, char *history) {
+	fseek(file, SEEK_END, SEEK_SET);
+	fprintf(file, "%s\n", history);
+}
+
+

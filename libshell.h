@@ -7,6 +7,7 @@
 #include<stdio.h>
 #include<sys/wait.h>
 #include<limits.h>
+#include<pwd.h>
 
 #define STDMODE 0600
 #define DELIMITERSET " ><|&"
@@ -30,10 +31,18 @@
 #define BACK_SYMBOL '&'
 #define NEWLINE_SYMBOL '\n'
 
+#define HISTORYFILE ".koopahist"
 
+// main functions of shell
 int makeargv(char *s, char *delimiters, char ***argvp);
 int parsefile(char *inbuf, char delimiter, char **v);
 int redirect(char *infilename, char *outfilename);
 void executecmdline(char *cmd);
 int connectpipeline(char *cmd, int frontfd[], int backfd[]);
 void display_prompt(); 
+
+// history file functions
+char *get_user_homedir();
+FILE *init_history();
+void read_history(FILE *file);
+void write_history(FILE *file, char *history);

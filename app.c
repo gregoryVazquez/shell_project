@@ -17,6 +17,9 @@ void main(void) {
 	struct sigaction defaulthndl;
 	sigset_t blockmask;
 
+	// get histfile
+	FILE *histfile = init_history();
+	
 	// set mask
 	sigemptyset(&blockmask);
 	sigaddset(&blockmask, SIGINT);
@@ -49,13 +52,19 @@ void main(void) {
 			*(inbuf + strlen(inbuf) - 1) = '\0';
 		if (strcmp(inbuf, QUIT_STRING) == 0)
 			break;
-		// changing dirs capability
-		if (strstr(inbuf, "cd") != NULL) {
+
+		// write hist
+		write_history(histfile, inbuf);
+		// reading histfile
+		if (strstr(inbuf, "history") != NULL) {
+			if (strcmp("history", strtok(inbuf, " ")) == 0) 
+				read_history(histfile);
+					       
+		} else if (strstr(inbuf, "cd") != NULL) {
 			if (strcmp("cd", strtok(inbuf, " ")) == 0)
 				if (chdir(strtok(NULL, " ")) == -1)
 						perror("failed changing directories");
-		}
-		else {
+		} else {
 			if ((backp = strchr(inbuf, BACK_SYMBOL)) == NULL)
 				inbackground = FALSE;
 			else {
